@@ -51,14 +51,33 @@ class BaseGenerator:
     def _claude_cli_available(self) -> bool:
         return shutil.which("claude") is not None
 
+    SYSTEM_PROMPT_APPEND = (
+        "당신은 단일 마크다운 파일의 텍스트만 stdout으로 출력합니다. "
+        "도구를 호출하거나 파일을 작성/수정하지 않습니다. "
+        "어떤 보고서, 요약, 메타 코멘트도 출력에 포함하지 않습니다. "
+        "출력은 반드시 '---'로 시작하는 Jekyll frontmatter로 시작하고, "
+        "frontmatter 다음에 본문 마크다운만 이어집니다. "
+        "출력의 마지막에는 'BACKTICK x3' 코드블록이나 보고 문장을 절대 추가하지 않습니다."
+    )
+
     def _generate_via_claude(self, full_prompt: str) -> str | None:
-        """Claude CLI로 콘텐츠 생성. 실패 시 None."""
+        """Claude CLI로 콘텐츠 생성. 실패 또는 형식 불일치 시 None."""
         if not self._claude_cli_available():
             logger.warning("claude CLI 없음 — fallback 사용")
             return None
         try:
             result = subprocess.run(
-                ["claude", "--print"],
+                [
+                    "claude",
+                    "--print",
+                    "--disallowedTools",
+                    "Read Write Edit MultiEdit Bash Glob Grep WebFetch WebSearch Agent NotebookEdit TodoWrite Task",
+                    "--disable-slash-commands",
+                    "--append-system-prompt",
+                    self.SYSTEM_PROMPT_APPEND,
+                    "--output-format",
+                    "text",
+                ],
                 input=full_prompt,
                 capture_output=True,
                 text=True,
@@ -67,7 +86,11 @@ class BaseGenerator:
             if result.returncode != 0:
                 logger.error("Claude CLI 실패: %s", result.stderr[:500])
                 return None
-            return result.stdout
+            output = result.stdout.strip()
+            if not output.startswith("---"):
+                logger.error("Claude 출력이 frontmatter로 시작하지 않음 (앞 200자: %r)", output[:200])
+                return None
+            return output + "\n"
         except subprocess.TimeoutExpired:
             logger.error("Claude CLI 타임아웃 (10분)")
             return None

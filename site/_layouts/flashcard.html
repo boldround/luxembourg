@@ -1,0 +1,298 @@
+---
+layout: default
+---
+
+<style>
+  .flashcard-deck {
+    max-width: 460px;
+    margin: 1.5rem auto;
+    padding: 0 0.5rem;
+  }
+
+  .flashcard-progress {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.8rem;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+  }
+
+  .flashcard-progress-bar {
+    flex: 1;
+    height: 4px;
+    background: var(--pill-bg);
+    border-radius: 2px;
+    margin: 0 0.7rem;
+    overflow: hidden;
+  }
+
+  .flashcard-progress-fill {
+    height: 100%;
+    background: var(--accent);
+    transition: width 0.25s;
+  }
+
+  .flashcard {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 3 / 4;
+    perspective: 1200px;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .flashcard-inner {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+    transition: transform 0.5s;
+  }
+
+  .flashcard.flipped .flashcard-inner {
+    transform: rotateY(180deg);
+  }
+
+  .flashcard-face {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    border-radius: 14px;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+    padding: 1.5rem 1.3rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    overflow-y: auto;
+  }
+
+  .flashcard-face.back {
+    transform: rotateY(180deg);
+    background: var(--pill-bg);
+  }
+
+  .flashcard-front-q {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1.5;
+  }
+
+  .flashcard-front-hint {
+    margin-top: 0.6rem;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+  }
+
+  .flashcard-back-a {
+    font-size: 0.95rem;
+    line-height: 1.65;
+    color: var(--text);
+  }
+
+  .flashcard-back-meta {
+    margin-top: 1rem;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    border-top: 1px dashed var(--border);
+    padding-top: 0.6rem;
+    width: 100%;
+  }
+
+  .flashcard-controls {
+    margin-top: 1.2rem;
+    display: flex;
+    gap: 0.6rem;
+    justify-content: center;
+  }
+
+  .fc-btn {
+    flex: 1;
+    max-width: 100px;
+    padding: 0.7rem 0.8rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: opacity 0.2s, transform 0.1s;
+  }
+
+  .fc-btn:active { transform: scale(0.97); }
+
+  .fc-btn.again {
+    background: var(--tag-overdue);
+    color: #fff;
+  }
+
+  .fc-btn.hard {
+    background: var(--tag-warn);
+    color: #fff;
+  }
+
+  .fc-btn.good {
+    background: var(--tag-success);
+    color: #fff;
+  }
+
+  .fc-btn.flip {
+    background: var(--accent);
+    color: #fff;
+    max-width: 200px;
+  }
+
+  .flashcard-done {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--text-secondary);
+  }
+
+  .flashcard-done h2 {
+    color: var(--accent);
+    margin-bottom: 0.6rem;
+  }
+</style>
+
+<div class="post-header" style="text-align:center;margin-bottom:1rem;">
+  <h1 style="font-size:1.3rem;">{{ page.title }}</h1>
+  {% if page.subject %}
+  <div style="margin-top:0.5rem;display:flex;gap:0.3rem;justify-content:center;flex-wrap:wrap;">
+    {% for subj in page.subject %}
+      {% case subj %}
+        {% when 'accounting1' %}<span class="tag tag-acc1">회계학 1부</span>
+        {% when 'accounting2' %}<span class="tag tag-acc2">회계학 2부</span>
+        {% when 'tax_law1' %}<span class="tag tag-tax1">세법학 1부</span>
+        {% when 'tax_law2' %}<span class="tag tag-tax2">세법학 2부</span>
+      {% endcase %}
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+
+<div class="flashcard-deck" id="deck">
+  <div class="flashcard-progress">
+    <span id="fc-counter">1 / {{ page.cards | size }}</span>
+    <div class="flashcard-progress-bar">
+      <div class="flashcard-progress-fill" id="fc-fill" style="width: 0%;"></div>
+    </div>
+  </div>
+
+  <div class="flashcard" id="card">
+    <div class="flashcard-inner">
+      <div class="flashcard-face front">
+        <div class="flashcard-front-q" id="fc-q">로딩 중...</div>
+        <div class="flashcard-front-hint">탭하여 답 확인</div>
+      </div>
+      <div class="flashcard-face back">
+        <div class="flashcard-back-a" id="fc-a"></div>
+        <div class="flashcard-back-meta" id="fc-meta"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="flashcard-controls">
+    <button class="fc-btn flip" id="btn-flip">답 보기</button>
+  </div>
+  <div class="flashcard-controls" id="grade-row" style="display:none;">
+    <button class="fc-btn again" data-grade="again">다시</button>
+    <button class="fc-btn hard" data-grade="hard">어려움</button>
+    <button class="fc-btn good" data-grade="good">쉬움</button>
+  </div>
+</div>
+
+<div class="flashcard-done" id="done" style="display:none;">
+  <h2>오늘의 카드 완료</h2>
+  <p>수고하셨습니다 — 결과는 회독 트래커에 저장됩니다.</p>
+  <p style="margin-top:1rem;"><a href="{{ '/flashcards/' | relative_url }}">다른 덱 보기 →</a></p>
+</div>
+
+<script id="cards-data" type="application/json">{{ page.cards | jsonify }}</script>
+
+<script>
+(function() {
+  var raw = document.getElementById('cards-data').textContent;
+  var cards = [];
+  try { cards = JSON.parse(raw); } catch (e) { console.error(e); }
+
+  var idx = 0;
+  var card = document.getElementById('card');
+  var qEl = document.getElementById('fc-q');
+  var aEl = document.getElementById('fc-a');
+  var metaEl = document.getElementById('fc-meta');
+  var counter = document.getElementById('fc-counter');
+  var fill = document.getElementById('fc-fill');
+  var btnFlip = document.getElementById('btn-flip');
+  var gradeRow = document.getElementById('grade-row');
+  var done = document.getElementById('done');
+  var deck = document.getElementById('deck');
+  var deckSlug = "{{ page.title | slugify }}";
+  var stats = JSON.parse(localStorage.getItem('lux-fc-' + deckSlug) || '{}');
+
+  function render() {
+    if (idx >= cards.length) {
+      deck.style.display = 'none';
+      done.style.display = 'block';
+      return;
+    }
+    var c = cards[idx];
+    qEl.textContent = c.q || '';
+    aEl.innerHTML = c.a || '';
+    var meta = [];
+    if (c.law) meta.push(c.law);
+    if (c.applied_date) meta.push('적용 ' + c.applied_date);
+    if (c.source) meta.push(c.source);
+    metaEl.textContent = meta.join(' · ');
+    counter.textContent = (idx + 1) + ' / ' + cards.length;
+    fill.style.width = ((idx) / cards.length * 100) + '%';
+    card.classList.remove('flipped');
+    btnFlip.style.display = '';
+    gradeRow.style.display = 'none';
+  }
+
+  function flip() {
+    card.classList.add('flipped');
+    btnFlip.style.display = 'none';
+    gradeRow.style.display = 'flex';
+  }
+
+  card.addEventListener('click', function() {
+    if (!card.classList.contains('flipped')) flip();
+  });
+
+  btnFlip.addEventListener('click', flip);
+
+  document.querySelectorAll('[data-grade]').forEach(function(b) {
+    b.addEventListener('click', function() {
+      var g = b.getAttribute('data-grade');
+      var key = idx;
+      stats[key] = (stats[key] || []);
+      stats[key].push({ d: new Date().toISOString().slice(0, 10), g: g });
+      localStorage.setItem('lux-fc-' + deckSlug, JSON.stringify(stats));
+      idx++;
+      render();
+    });
+  });
+
+  // Swipe support
+  var startX = null;
+  card.addEventListener('touchstart', function(e) { startX = e.touches[0].clientX; });
+  card.addEventListener('touchend', function(e) {
+    if (startX === null) return;
+    var dx = e.changedTouches[0].clientX - startX;
+    if (Math.abs(dx) > 60) {
+      if (!card.classList.contains('flipped')) flip();
+    }
+    startX = null;
+  });
+
+  render();
+})();
+</script>

@@ -1,0 +1,27 @@
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.venv/
+venv/
+
+# Jekyll
+site/_site/
+site/.jekyll-cache/
+site/.jekyll-metadata
+site/vendor/
+site/Gemfile.lock
+
+# Logs
+logs/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# 개인 자료 (커밋 금지)
+data/raw/private/
+data/personal/
+.env
+.env.local

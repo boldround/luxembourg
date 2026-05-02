@@ -1,0 +1,156 @@
+---
+layout: post
+---
+
+<style>
+  .calc-step {
+    margin: 1rem 0;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--card-bg);
+    box-shadow: var(--card-shadow);
+    overflow: hidden;
+  }
+
+  .calc-step-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    user-select: none;
+    background: var(--pill-bg);
+    border-bottom: 1px solid var(--border);
+    transition: background 0.15s;
+  }
+
+  .calc-step-header:hover { background: var(--border-light); }
+
+  .calc-step-header.collapsed { border-bottom: none; }
+
+  .calc-step-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    font-size: 0.78rem;
+    font-weight: 700;
+    margin-right: 0.6rem;
+  }
+
+  .calc-step-title {
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--text);
+    flex: 1;
+  }
+
+  .calc-step-toggle {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    transition: transform 0.2s;
+  }
+
+  .calc-step-header.collapsed .calc-step-toggle {
+    transform: rotate(-90deg);
+  }
+
+  .calc-step-body {
+    padding: 0.9rem 1rem;
+    font-size: 0.95rem;
+    line-height: 1.75;
+  }
+
+  .calc-step-body.hidden { display: none; }
+
+  .calc-answer {
+    margin-top: 1.5rem;
+    padding: 1rem 1.1rem;
+    border-radius: 10px;
+    background: rgba(45, 95, 63, 0.08);
+    border: 1px solid var(--accent);
+    font-size: 0.95rem;
+  }
+
+  .calc-answer-label {
+    font-size: 0.72rem;
+    color: var(--accent);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.4rem;
+  }
+
+  .calc-answer-value {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  .calc-show-all {
+    display: inline-block;
+    margin-bottom: 1rem;
+    padding: 0.4rem 0.9rem;
+    font-size: 0.78rem;
+    background: var(--pill-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .calc-show-all:hover { border-color: var(--accent); color: var(--accent); }
+
+  .question-block {
+    background: var(--card-bg);
+    border-left: 4px solid var(--accent);
+    padding: 1rem 1.1rem;
+    margin: 1rem 0 1.5rem;
+    border-radius: 0 8px 8px 0;
+    font-size: 0.95rem;
+    line-height: 1.75;
+  }
+</style>
+
+<div class="post-body" id="post-body">
+  {{ content }}
+</div>
+
+<script>
+(function() {
+  var headers = document.querySelectorAll('.calc-step-header');
+  headers.forEach(function(h) {
+    h.classList.add('collapsed');
+    var body = h.nextElementSibling;
+    if (body) body.classList.add('hidden');
+
+    h.addEventListener('click', function() {
+      h.classList.toggle('collapsed');
+      if (body) body.classList.toggle('hidden');
+    });
+  });
+
+  var showAll = document.querySelector('.calc-show-all');
+  if (showAll) {
+    showAll.addEventListener('click', function() {
+      var allHidden = Array.from(document.querySelectorAll('.calc-step-body')).every(function(b) {
+        return b.classList.contains('hidden');
+      });
+      document.querySelectorAll('.calc-step-header').forEach(function(h) {
+        if (allHidden) h.classList.remove('collapsed');
+        else h.classList.add('collapsed');
+      });
+      document.querySelectorAll('.calc-step-body').forEach(function(b) {
+        if (allHidden) b.classList.remove('hidden');
+        else b.classList.add('hidden');
+      });
+      showAll.textContent = allHidden ? '모두 접기' : '단계별 풀이 보기';
+    });
+  }
+})();
+</script>

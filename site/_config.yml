@@ -1,0 +1,56 @@
+title: "프로젝트 룩셈부르크"
+description: "노아의 세무사 시험 학습 플랫폼"
+url: "https://boldround.github.io"
+baseurl: "/luxembourg"
+markdown: kramdown
+permalink: /:categories/:year/:month/:day/:title/
+timezone: Asia/Seoul
+future: true
+
+# 시험 D-Day (2026 2차)
+exam_date_2026_2: "2026-07-18"
+exam_date_2027_1: "2027-04-25"
+exam_date_2027_2: "2027-07-17"
+
+# 2차 4과목
+subjects_2:
+  - id: accounting1
+    label: 회계학 1부
+    color: "#2D5F3F"
+  - id: accounting2
+    label: 회계학 2부
+    color: "#1B4F72"
+  - id: tax_law1
+    label: 세법학 1부
+    color: "#7D3C3C"
+  - id: tax_law2
+    label: 세법학 2부
+    color: "#6B4226"
+
+# 1차 4과목 (행정소송법 선택)
+subjects_1:
+  - id: public_finance
+    label: 재정학
+  - id: tax_intro
+    label: 세법학개론
+  - id: accounting_intro
+    label: 회계학개론
+  - id: admin_litigation
+    label: 행정소송법
+
+defaults:
+  - scope:
+      path: "_posts"
+      type: "posts"
+    values:
+      layout: "post"
+
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - vendor
+  - .jekyll-cache
+  - _site
+  - .DS_Store
+  - node_modules
+  - README.md

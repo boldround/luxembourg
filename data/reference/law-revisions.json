@@ -1,0 +1,7 @@
+{
+  "_meta": {
+    "description": "세법 개정 이력 (조문 단위 구→신 diff). 시드 단계.",
+    "tracked_years": [2024, 2025, 2026]
+  },
+  "revisions": []
+}

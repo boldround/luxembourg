@@ -1,0 +1,129 @@
+"""콘텐츠 생성기 공통 베이스 — Claude CLI 호출 + 파일 저장."""
+
+import json
+import logging
+import shutil
+import subprocess
+from datetime import datetime, timezone, timedelta
+from pathlib import Path
+
+logger = logging.getLogger("luxembourg.generator")
+KST = timezone(timedelta(hours=9))
+
+
+class BaseGenerator:
+    """모든 콘텐츠 생성기의 부모.
+
+    하위 클래스는 다음을 구현:
+    - CONTENT_TYPE: str — 'briefing', 'calculation', 'concept', ...
+    - PROMPT_NAME: str — prompts/{name}.md 파일명
+    - build_context(self) -> str — 프롬프트에 주입할 컨텍스트 문자열
+    - fallback_content(self) -> str — Claude CLI 실패 시 기본 마크다운
+    """
+
+    CONTENT_TYPE: str = ""
+    PROMPT_NAME: str = ""
+
+    def __init__(self, date_str: str = None):
+        if date_str is None:
+            date_str = datetime.now(KST).strftime("%Y-%m-%d")
+        self.date_str = date_str
+        self.base_dir = Path(__file__).resolve().parent.parent.parent
+        self.posts_dir = self.base_dir / "site" / "_posts"
+        self.data_dir = self.base_dir / "data"
+        self.prompt_path = self.base_dir / "src" / "prompts" / f"{self.PROMPT_NAME}.md"
+
+    def output_path(self) -> Path:
+        return self.posts_dir / f"{self.date_str}-{self.CONTENT_TYPE}.md"
+
+    def build_context(self) -> str:
+        raise NotImplementedError
+
+    def fallback_content(self) -> str:
+        raise NotImplementedError
+
+    def _read_prompt(self) -> str:
+        if not self.prompt_path.exists():
+            logger.warning("프롬프트 없음: %s", self.prompt_path)
+            return ""
+        return self.prompt_path.read_text(encoding="utf-8")
+
+    def _claude_cli_available(self) -> bool:
+        return shutil.which("claude") is not None
+
+    def _generate_via_claude(self, full_prompt: str) -> str | None:
+        """Claude CLI로 콘텐츠 생성. 실패 시 None."""
+        if not self._claude_cli_available():
+            logger.warning("claude CLI 없음 — fallback 사용")
+            return None
+        try:
+            result = subprocess.run(
+                ["claude", "--print"],
+                input=full_prompt,
+                capture_output=True,
+                text=True,
+                timeout=600,
+            )
+            if result.returncode != 0:
+                logger.error("Claude CLI 실패: %s", result.stderr[:500])
+                return None
+            return result.stdout
+        except subprocess.TimeoutExpired:
+            logger.error("Claude CLI 타임아웃 (10분)")
+            return None
+        except Exception as e:
+            logger.error("Claude CLI 호출 오류: %s", e)
+            return None
+
+    def generate(self) -> Path:
+        self.posts_dir.mkdir(parents=True, exist_ok=True)
+        out = self.output_path()
+
+        prompt = self._read_prompt()
+        ctx = self.build_context()
+        full = prompt + "\n\n---\n\n" + ctx if prompt else ctx
+
+        content = self._generate_via_claude(full)
+        if content is None:
+            logger.warning("fallback 콘텐츠 사용")
+            content = self.fallback_content()
+
+        out.write_text(content, encoding="utf-8")
+        logger.info("저장: %s", out)
+        return out
+
+    @staticmethod
+    def frontmatter(
+        title: str,
+        date_str: str,
+        category: str,
+        subjects: list[str] = None,
+        topics: list[str] = None,
+        applied_date: str = None,
+        difficulty: str = None,
+        excerpt: str = None,
+        layout: str = "post",
+        extra: dict = None,
+    ) -> str:
+        lines = ["---", f'layout: {layout}', f'title: "{title}"',
+                 f"date: {date_str} 09:00:00 +0900",
+                 f"categories: [{category}]"]
+        if subjects:
+            lines.append(f"subject: [{', '.join(subjects)}]")
+        if topics:
+            lines.append(f"topics: {json.dumps(topics, ensure_ascii=False)}")
+        if difficulty:
+            lines.append(f"difficulty: {difficulty}")
+        if applied_date:
+            lines.append(f'applied_date: "{applied_date}"')
+        if excerpt:
+            esc = excerpt.replace('"', "'")
+            lines.append(f'excerpt: "{esc}"')
+        if extra:
+            for k, v in extra.items():
+                if isinstance(v, str):
+                    lines.append(f'{k}: "{v}"')
+                else:
+                    lines.append(f"{k}: {json.dumps(v, ensure_ascii=False)}")
+        lines.append("---")
+        return "\n".join(lines) + "\n\n"

@@ -1,0 +1,16 @@
+{
+  "_meta": {
+    "description": "노아의 회독·정답률 진도 트래커",
+    "started": "2026-05-02"
+  },
+  "subjects": {
+    "accounting1": { "rounds": 0, "last_studied": null, "accuracy": null },
+    "accounting2": { "rounds": 0, "last_studied": null, "accuracy": null },
+    "tax_law1":    { "rounds": 0, "last_studied": null, "accuracy": null },
+    "tax_law2":    { "rounds": 0, "last_studied": null, "accuracy": null },
+    "public_finance":   { "rounds": 0, "last_studied": null, "accuracy": null },
+    "tax_intro":        { "rounds": 0, "last_studied": null, "accuracy": null },
+    "accounting_intro": { "rounds": 0, "last_studied": null, "accuracy": null },
+    "admin_litigation": { "rounds": 0, "last_studied": null, "accuracy": null }
+  }
+}

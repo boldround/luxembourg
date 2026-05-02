@@ -1,0 +1,7 @@
+{
+  "_meta": {
+    "description": "국세청 통칙·예규 DB. 시드 단계.",
+    "source": "국세법령정보시스템 (taxlaw.nts.go.kr)"
+  },
+  "rulings": []
+}

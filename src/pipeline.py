@@ -164,7 +164,7 @@ def run_pipeline(
     # Step 1: 데이터 수집 (briefing만)
     if not skip_collect and content_type == "briefing" and not dry_run:
         try:
-            from collectors.nts_collector import NTSCollector
+            from .collectors.nts_collector import NTSCollector
 
             def do_collect():
                 return NTSCollector(date_str=date).collect()
@@ -180,22 +180,22 @@ def run_pipeline(
             output_path = POSTS_DIR / f"{date}-{content_type}.md"
             logger.info("[DRY-RUN] 출력 경로: %s", output_path)
         elif content_type == "briefing":
-            from generators.briefing_gen import BriefingGenerator
+            from .generators.briefing_gen import BriefingGenerator
             output_path = _step(logger, "브리핑 생성", lambda: BriefingGenerator(date).generate())
         elif content_type == "calculation":
-            from generators.calc_gen import CalcGenerator
+            from .generators.calc_gen import CalcGenerator
             output_path = _step(logger, "계산문제 생성", lambda: CalcGenerator(date).generate())
         elif content_type == "concept":
-            from generators.concept_gen import ConceptGenerator
+            from .generators.concept_gen import ConceptGenerator
             output_path = _step(logger, "개념 정리 생성", lambda: ConceptGenerator(date).generate())
         elif content_type == "flashcard":
-            from generators.flashcard_gen import FlashcardGenerator
+            from .generators.flashcard_gen import FlashcardGenerator
             output_path = _step(logger, "플래시카드 생성", lambda: FlashcardGenerator(date).generate())
         elif content_type == "practice":
-            from generators.practice_gen import PracticeGenerator
+            from .generators.practice_gen import PracticeGenerator
             output_path = _step(logger, "논술 답안 생성", lambda: PracticeGenerator(date).generate())
         elif content_type == "weekly":
-            from generators.weekly_review import WeeklyReviewGenerator
+            from .generators.weekly_review import WeeklyReviewGenerator
             output_path = _step(logger, "주간 리포트 생성", lambda: WeeklyReviewGenerator(date).generate())
         else:
             logger.error("알 수 없는 타입: %s", content_type)
@@ -210,7 +210,7 @@ def run_pipeline(
     # Step 3: 팩트체커
     if output_path and not dry_run and output_path.exists():
         try:
-            from validators.fact_checker import check_file
+            from .validators.fact_checker import check_file
 
             def do_check():
                 return check_file(output_path)

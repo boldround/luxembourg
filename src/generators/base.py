@@ -32,6 +32,7 @@ class BaseGenerator:
         self.posts_dir = self.base_dir / "site" / "_posts"
         self.data_dir = self.base_dir / "data"
         self.prompt_path = self.base_dir / "src" / "prompts" / f"{self.PROMPT_NAME}.md"
+        self.used_fallback = False
 
     def output_path(self) -> Path:
         return self.posts_dir / f"{self.date_str}-{self.CONTENT_TYPE}.md"
@@ -108,11 +109,12 @@ class BaseGenerator:
 
         content = self._generate_via_claude(full)
         if content is None:
-            logger.warning("fallback 콘텐츠 사용")
+            logger.warning("fallback 콘텐츠 사용 — 배포 스킵 권장")
             content = self.fallback_content()
+            self.used_fallback = True
 
         out.write_text(content, encoding="utf-8")
-        logger.info("저장: %s", out)
+        logger.info("저장: %s (fallback=%s)", out, self.used_fallback)
         return out
 
     @staticmethod

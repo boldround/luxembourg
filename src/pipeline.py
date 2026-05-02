@@ -175,34 +175,46 @@ def run_pipeline(
 
     # Step 2: 생성기 호출
     output_path = None
+    generator = None
     try:
         if dry_run:
             output_path = POSTS_DIR / f"{date}-{content_type}.md"
             logger.info("[DRY-RUN] 출력 경로: %s", output_path)
         elif content_type == "briefing":
             from .generators.briefing_gen import BriefingGenerator
-            output_path = _step(logger, "브리핑 생성", lambda: BriefingGenerator(date).generate())
+            generator = BriefingGenerator(date)
+            output_path = _step(logger, "브리핑 생성", generator.generate)
         elif content_type == "calculation":
             from .generators.calc_gen import CalcGenerator
-            output_path = _step(logger, "계산문제 생성", lambda: CalcGenerator(date).generate())
+            generator = CalcGenerator(date)
+            output_path = _step(logger, "계산문제 생성", generator.generate)
         elif content_type == "concept":
             from .generators.concept_gen import ConceptGenerator
-            output_path = _step(logger, "개념 정리 생성", lambda: ConceptGenerator(date).generate())
+            generator = ConceptGenerator(date)
+            output_path = _step(logger, "개념 정리 생성", generator.generate)
         elif content_type == "flashcard":
             from .generators.flashcard_gen import FlashcardGenerator
-            output_path = _step(logger, "플래시카드 생성", lambda: FlashcardGenerator(date).generate())
+            generator = FlashcardGenerator(date)
+            output_path = _step(logger, "플래시카드 생성", generator.generate)
         elif content_type == "practice":
             from .generators.practice_gen import PracticeGenerator
-            output_path = _step(logger, "논술 답안 생성", lambda: PracticeGenerator(date).generate())
+            generator = PracticeGenerator(date)
+            output_path = _step(logger, "논술 답안 생성", generator.generate)
         elif content_type == "weekly":
             from .generators.weekly_review import WeeklyReviewGenerator
-            output_path = _step(logger, "주간 리포트 생성", lambda: WeeklyReviewGenerator(date).generate())
+            generator = WeeklyReviewGenerator(date)
+            output_path = _step(logger, "주간 리포트 생성", generator.generate)
         else:
             logger.error("알 수 없는 타입: %s", content_type)
             sys.exit(1)
     except Exception as e:
         logger.error("생성기 실패: %s", e)
         sys.exit(1)
+
+    # fallback 사용 시 배포 스킵
+    if generator and generator.used_fallback and not dry_run:
+        logger.warning("fallback 콘텐츠 — git push 스킵 (수동 검토 후 재실행 권장)")
+        return output_path
 
     if output_path:
         logger.info("출력: %s", output_path)

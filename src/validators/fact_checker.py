@@ -90,7 +90,9 @@ def check_file(path: Path) -> list[dict]:
                 "msg": f"applied_date {applied}가 너무 미래 (today={today})",
             })
 
-    # 2. 조문 번호 검증 (DB 있을 때만)
+    # 2. 조문 번호 검증 (DB 있을 때만, WARN 수준 — DB 시드가 부족하면 false positive 다수)
+    #    P0/P1: WARN로만 기록하고 배포 진행. P2에서 DB가 80%+ 채워지면 CRITICAL로 승격.
+    warnings = []
     laws = load_law_db()
     if laws:
         for match in ARTICLE_PATTERN.finditer(text):
@@ -104,10 +106,16 @@ def check_file(path: Path) -> list[dict]:
             article_key = f"{article_num}-{sub}" if sub else str(article_num)
             articles = law_data.get("articles", {})
             if article_num not in articles and article_key not in articles:
-                critical.append({
+                warnings.append({
                     "type": "UNKNOWN_ARTICLE",
-                    "msg": f"{law_kr} 제{article_num}조" + (f"의{sub}" if sub else "") + " — DB에 없음",
+                    "msg": f"{law_kr} 제{article_num}조" + (f"의{sub}" if sub else "") + " — DB에 없음 (WARN)",
                 })
+
+    if warnings:
+        import logging
+        log = logging.getLogger("luxembourg.factcheck")
+        for w in warnings:
+            log.warning("[%s] %s", w["type"], w["msg"])
 
     # 3. 판례 사건번호 검증 (DB 있을 때만)
     cases = load_case_db()

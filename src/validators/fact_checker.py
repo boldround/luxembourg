@@ -48,6 +48,10 @@ CASE_PATTERN = re.compile(r"대법원\s*(\d{4})[\s,]*([두누다도드])\s*(\d+)
 
 # applied_date frontmatter
 APPLIED_DATE_PATTERN = re.compile(r"^applied_date:\s*['\"]?(\d{4}-\d{2}-\d{2})['\"]?", re.MULTILINE)
+CATEGORIES_PATTERN = re.compile(r"^categories:\s*\[([^\]]+)\]", re.MULTILINE)
+
+# applied_date 검증을 면제하는 카테고리 (시험 법령 무관 메타 콘텐츠)
+APPLIED_DATE_EXEMPT = {"weekly"}
 
 
 def load_law_db() -> dict:
@@ -76,19 +80,25 @@ def check_file(path: Path) -> list[dict]:
     text = path.read_text(encoding="utf-8")
     critical = []
 
-    # 1. applied_date 필수
-    m = APPLIED_DATE_PATTERN.search(text)
-    if not m:
-        critical.append({"type": "MISSING_APPLIED_DATE", "msg": "applied_date frontmatter 누락"})
-    else:
-        applied = Date.fromisoformat(m.group(1))
-        # 시험일 시점 시행 법령이어야 함 (현실적으로 미래 1년 이내)
-        today = Date.today()
-        if applied.year > today.year + 1:
-            critical.append({
-                "type": "APPLIED_DATE_FUTURE",
-                "msg": f"applied_date {applied}가 너무 미래 (today={today})",
-            })
+    # 카테고리 추출 (applied_date 면제 판단용)
+    cat_match = CATEGORIES_PATTERN.search(text)
+    categories = set()
+    if cat_match:
+        categories = {c.strip() for c in cat_match.group(1).split(",")}
+
+    # 1. applied_date 필수 (메타 콘텐츠는 면제)
+    if not (categories & APPLIED_DATE_EXEMPT):
+        m = APPLIED_DATE_PATTERN.search(text)
+        if not m:
+            critical.append({"type": "MISSING_APPLIED_DATE", "msg": "applied_date frontmatter 누락"})
+        else:
+            applied = Date.fromisoformat(m.group(1))
+            today = Date.today()
+            if applied.year > today.year + 1:
+                critical.append({
+                    "type": "APPLIED_DATE_FUTURE",
+                    "msg": f"applied_date {applied}가 너무 미래 (today={today})",
+                })
 
     # 2. 조문 번호 검증 (DB 있을 때만, WARN 수준 — DB 시드가 부족하면 false positive 다수)
     #    P0/P1: WARN로만 기록하고 배포 진행. P2에서 DB가 80%+ 채워지면 CRITICAL로 승격.

@@ -3,7 +3,7 @@ description: "노아의 세무사 시험 학습 플랫폼"
 url: "https://boldround.github.io"
 baseurl: "/luxembourg"
 markdown: kramdown
-permalink: /:categories/:year/:month/:day/:title/
+permalink: /:year/:month/:day/:title/
 timezone: Asia/Seoul
 future: true
 

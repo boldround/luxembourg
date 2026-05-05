@@ -1,10 +1,13 @@
 ---
 layout: calculation
 title: "종합소득세 산출세액 계산 — 종합소득금액에서 과세표준·산출세액까지"
-subject: accounting2
+date: 2026-05-05 09:00:00 +0900
+categories: [calculation]
+subject: [accounting2]
 topics: [소득세, 종합소득금액, 과세표준, 산출세액, 종합소득공제]
 difficulty: 상
-applied_date: 2026-05-05
+applied_date: "2026-01-01"
+excerpt: "사업·근로·기타소득 종합 + 차량유지비 부인 등 실전 세무조정 후 산출세액 도출."
 ---
 
 <div class='question-block'>

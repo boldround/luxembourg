@@ -58,7 +58,11 @@ class BaseGenerator:
         "어떤 보고서, 요약, 메타 코멘트도 출력에 포함하지 않습니다. "
         "출력은 반드시 '---'로 시작하는 Jekyll frontmatter로 시작하고, "
         "frontmatter 다음에 본문 마크다운만 이어집니다. "
-        "출력의 마지막에는 'BACKTICK x3' 코드블록이나 보고 문장을 절대 추가하지 않습니다."
+        "출력의 마지막에는 'BACKTICK x3' 코드블록이나 보고 문장을 절대 추가하지 않습니다.\n\n"
+        "frontmatter 필수 필드: layout, title, date (YYYY-MM-DD HH:MM:SS +0900), "
+        "categories ([type] 형태 배열), subject ([id] 형태 배열, 단수 문자열 금지), "
+        "applied_date (\"YYYY-MM-DD\"). "
+        "subject 값은 반드시 [accounting1, accounting2, tax_law1, tax_law2, admin_litigation] 중 하나 이상을 배열로."
     )
 
     def _generate_via_claude(self, full_prompt: str) -> str | None:

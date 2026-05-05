@@ -548,6 +548,44 @@
 
     .site-footer .heart { color: var(--accent); }
 
+    /* === KaTeX 수식 모바일 가로 스크롤 === */
+    .katex-display {
+      overflow-x: auto;
+      overflow-y: hidden;
+      padding: 0.4rem 0;
+      -webkit-overflow-scrolling: touch;
+    }
+    .katex-display > .katex { white-space: nowrap; }
+
+    /* === Back-to-top 부유 버튼 (긴 글용) === */
+    .back-to-top {
+      position: fixed;
+      right: 1rem;
+      bottom: calc(1rem + env(safe-area-inset-bottom));
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #fff;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      text-decoration: none;
+      box-shadow: 0 3px 12px rgba(0,0,0,0.18);
+      z-index: 90;
+      transition: transform 0.15s, opacity 0.2s;
+      border: none;
+      cursor: pointer;
+    }
+    .back-to-top.visible { display: inline-flex; }
+    .back-to-top:active { transform: scale(0.92); }
+
+    /* === 다크 모드 스크롤바 === */
+    [data-theme="dark"] ::-webkit-scrollbar { width: 8px; height: 8px; }
+    [data-theme="dark"] ::-webkit-scrollbar-thumb { background: #3a423b; border-radius: 4px; }
+    [data-theme="dark"] ::-webkit-scrollbar-track { background: transparent; }
+
     /* === Responsive === */
     @media (max-width: 480px) {
       html { font-size: 16px; }
@@ -557,6 +595,32 @@
       .stats-strip { gap: 0.35rem; }
       .stat-item { min-width: 70px; padding: 0.4rem 0.5rem; }
       .stat-value { font-size: 1rem; }
+      pre { font-size: 0.78rem; padding: 0.7rem; }
+      h1 { font-size: 1.35rem; }
+      h2 { font-size: 1.1rem; }
+      .post-body { line-height: 1.75; }
+      .post-list .post-title { font-size: 0.95rem; }
+      .nav-links a { padding: 0.5rem 0.55rem; font-size: 0.74rem; }
+    }
+
+    @media (max-width: 360px) {
+      .quick-links { grid-template-columns: 1fr; }
+      .stat-item { font-size: 0.85em; }
+    }
+
+    /* === 접근성: 포커스 표시 === */
+    a:focus-visible, button:focus-visible, input:focus-visible, .filter-pill:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+      border-radius: 4px;
+    }
+
+    /* === reduced-motion === */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.001ms !important;
+        transition-duration: 0.001ms !important;
+      }
     }
 
     /* === Print === */
@@ -660,8 +724,8 @@
         2026 2차 &middot; 2027 풀세트<br>
         개정세법 추적 &middot; 계산 풀이 &middot; 논술 답안
       </p>
-      <input type="password" class="access-code-input" id="access-code" placeholder="접속 코드" autocomplete="off" maxlength="30">
-      <button class="access-btn" id="access-btn">입장하기</button>
+      <input type="password" class="access-code-input" id="access-code" placeholder="접속 코드" autocomplete="one-time-code" inputmode="text" maxlength="30" enterkeyhint="go" autocapitalize="off" autocorrect="off" spellcheck="false">
+      <button class="access-btn" id="access-btn" type="button">입장하기</button>
       <div class="access-hint" id="access-hint">접속 코드를 입력하세요</div>
     </div>
   </div>
@@ -709,7 +773,8 @@
       if (e.key === 'Enter') tryAccess();
     });
     btn.addEventListener('click', tryAccess);
-    input.focus();
+    // 모바일에서 스크롤 점프 방지
+    try { input.focus({ preventScroll: true }); } catch (_) { input.focus(); }
   })();
   </script>
 
@@ -756,6 +821,37 @@
     <p>프로젝트 룩셈부르크 &mdash; 노아의 세무사 학습 플랫폼 <span class="heart">&hearts;</span></p>
     <p>&copy; {{ 'now' | date: "%Y" }} Noah Yoon. 사용 법령은 시험일 시점 기준.</p>
   </footer>
+
+  <button class="back-to-top" id="back-to-top" aria-label="맨 위로" title="맨 위로">↑</button>
+
+  <script>
+  (function() {
+    var btn = document.getElementById('back-to-top');
+    if (!btn) return;
+    function onScroll() {
+      if (window.scrollY > 600) btn.classList.add('visible');
+      else btn.classList.remove('visible');
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    btn.addEventListener('click', function() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  })();
+  </script>
+
+  <script>
+  (function() {
+    // 네비 active 메뉴 가로 스크롤 가운데 정렬 (8개 메뉴 잘릴 때 대비)
+    var active = document.querySelector('.nav-links a.active');
+    if (active && active.scrollIntoView) {
+      try {
+        active.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'instant' });
+      } catch (_) {
+        active.scrollIntoView();
+      }
+    }
+  })();
+  </script>
 
   <script>
   (function() {

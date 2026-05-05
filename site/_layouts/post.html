@@ -199,9 +199,51 @@ layout: default
   {% assign headings = content | split: '<h2' | size | minus: 1 %}
   {% if headings > 1 %}
   <nav class="toc" id="toc">
-    <div class="toc-title">목차</div>
+    <button class="toc-toggle" id="toc-toggle" aria-expanded="true" aria-controls="toc-list">
+      <span class="toc-title">목차</span>
+      <span class="toc-chev">▾</span>
+    </button>
     <ul id="toc-list"></ul>
   </nav>
+  <style>
+    .toc-toggle {
+      display: flex;
+      width: 100%;
+      align-items: center;
+      justify-content: space-between;
+      background: none;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      font-family: inherit;
+      color: inherit;
+    }
+    .toc-chev {
+      color: var(--text-muted);
+      transition: transform 0.2s;
+      font-size: 0.85rem;
+    }
+    .toc[aria-collapsed="true"] .toc-chev { transform: rotate(-90deg); }
+    .toc[aria-collapsed="true"] #toc-list { display: none; }
+    /* 읽기 진행률 바 */
+    .reading-progress {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: transparent;
+      z-index: 200;
+      pointer-events: none;
+    }
+    .reading-progress-bar {
+      height: 100%;
+      width: 0;
+      background: var(--accent);
+      transition: width 0.1s linear;
+    }
+  </style>
+  <div class="reading-progress"><div class="reading-progress-bar" id="reading-progress-bar"></div></div>
   {% endif %}
 
   <div class="post-body" id="post-body">
@@ -253,6 +295,7 @@ layout: default
       {% when 'weekly' %}{% assign back_url = '/progress/' %}{% assign back_label = '회독' %}
       {% when 'quiz' %}{% assign back_url = '/quiz/' %}{% assign back_label = '1차 모의고사' %}
       {% when 'summary' %}{% assign back_url = '/quiz/' %}{% assign back_label = '1차 단권화' %}
+      {% when 'exam' %}{% assign back_url = '/exams/' %}{% assign back_label = '기출' %}
     {% endcase %}
   {% endfor %}
 
@@ -264,7 +307,10 @@ layout: default
 (function() {
   var body = document.getElementById('post-body');
   var list = document.getElementById('toc-list');
+  var toc = document.getElementById('toc');
+  var toggle = document.getElementById('toc-toggle');
   if (!body || !list) return;
+
   var headings = body.querySelectorAll('h2, h3');
   headings.forEach(function(h, i) {
     if (!h.id) h.id = 'section-' + i;
@@ -276,6 +322,35 @@ layout: default
     li.appendChild(a);
     list.appendChild(li);
   });
+
+  // 모바일에서 항목 5개 이상이면 자동 접기
+  if (toggle && toc) {
+    var isMobile = window.matchMedia('(max-width: 600px)').matches;
+    if (isMobile && headings.length > 5) {
+      toc.setAttribute('aria-collapsed', 'true');
+      toggle.setAttribute('aria-expanded', 'false');
+    }
+    toggle.addEventListener('click', function() {
+      var collapsed = toc.getAttribute('aria-collapsed') === 'true';
+      toc.setAttribute('aria-collapsed', !collapsed);
+      toggle.setAttribute('aria-expanded', collapsed);
+    });
+  }
+
+  // 읽기 진행률
+  var bar = document.getElementById('reading-progress-bar');
+  if (bar) {
+    function update() {
+      var h = document.documentElement;
+      var scrolled = (h.scrollTop || document.body.scrollTop);
+      var max = h.scrollHeight - h.clientHeight;
+      var pct = max > 0 ? (scrolled / max) * 100 : 0;
+      bar.style.width = pct + '%';
+    }
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+  }
 })();
 </script>
 {% endif %}

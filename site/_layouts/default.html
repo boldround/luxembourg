@@ -726,6 +726,7 @@
       </div>
       <div class="nav-links">
         <a href="{{ '/' | relative_url }}" {% if page.url == '/' %}class="active"{% endif %}>홈</a>
+        <a href="{{ '/exams/' | relative_url }}" {% if page.url contains '/exams' or page.url contains '/exam/' %}class="active"{% endif %}>기출</a>
         <a href="{{ '/concepts/' | relative_url }}" {% if page.url contains '/concepts' %}class="active"{% endif %}>개념</a>
         <a href="{{ '/calculations/' | relative_url }}" {% if page.url contains '/calculations' %}class="active"{% endif %}>계산</a>
         <a href="{{ '/practice/' | relative_url }}" {% if page.url contains '/practice' %}class="active"{% endif %}>논술</a>

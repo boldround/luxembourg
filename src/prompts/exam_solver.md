@@ -8,36 +8,30 @@
 ### 1. 문제별 구조
 원본 기출에서 발견된 각 문제(헤딩 ##)에 대해:
 
-**회계학 1·2부 (계산형) — `layout: calculation`**
+**회계학 1·2부 (계산형) — `layout: post`** (단순 markdown으로 안정성 우선)
 ```
-## [문제 1] 원문 제목
+## [문제 1] 원문 제목 (배점 N점)
 
-<div class='question-block'>
-<strong>[문제]</strong> ...원문 그대로 인용...
-</div>
+> **[문제]**
+> ...원문 그대로 1-2단락 인용...
 
-<span class='calc-show-all'>단계별 풀이 보기</span>
+### 풀이
 
-<div class='calc-step'>
-  <div class='calc-step-header'>
-    <span style='display:flex;align-items:center;flex:1;'>
-      <span class='calc-step-num'>1</span>
-      <span class='calc-step-title'>1단계 — 무엇을</span>
-    </span>
-    <span class='calc-step-toggle'>▼</span>
-  </div>
-  <div class='calc-step-body'>
-공식 + 대입 + 중간 답
-<pre>...</pre>
-  </div>
-</div>
+**1단계 — 무엇을 계산하는지**
+공식: ...
+- 대입: ... = ...원
+- 중간 답: **A = ...원**
 
-(2단계, 3단계 ...)
+**2단계 — 다음 처리**
+...
 
-<div class='calc-answer'>
-  <div class='calc-answer-label'>정답</div>
-  <div class='calc-answer-value'>...최종 답...원</div>
-</div>
+**3단계 — ...**
+...
+
+### 정답
+**최종 답 = ...원**
+
+(필요 시 표/수식은 markdown 그대로. KaTeX는 `$...$` 또는 `$$...$$`)
 ```
 
 **세법학 1·2부 (논술형) — `layout: post`**

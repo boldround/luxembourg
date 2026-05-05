@@ -17,10 +17,13 @@ from .base import BaseGenerator
 logger = logging.getLogger("luxembourg.exam_solver")
 
 SUBJECT_TO_LAYOUT = {
-    "accounting1": "calculation",
-    "accounting2": "calculation",
+    # 회계학도 layout: post 사용 (calc-step HTML 강제 시 Claude CLI 출력 형식 깨짐 → fallback 다수).
+    # 단계 풀이는 markdown ### 헤딩으로 표현하면 안정적이고 모바일 가독성도 양호.
+    "accounting1": "post",
+    "accounting2": "post",
     "tax_law1": "post",
     "tax_law2": "post",
+    "admin_litigation": "post",
 }
 
 SUBJECT_KR = {

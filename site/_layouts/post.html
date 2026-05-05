@@ -148,6 +148,12 @@ layout: default
             <span class="tag tag-tax2">세법학 2부</span>
           {% when 'admin_litigation' %}
             <span class="tag" style="background:var(--tag-default);color:#fff;">행정소송법</span>
+          {% when 'public_finance' %}
+            <span class="tag tag-acc1">재정학</span>
+          {% when 'tax_intro' %}
+            <span class="tag tag-tax1">세법학개론</span>
+          {% when 'accounting_intro' %}
+            <span class="tag tag-acc2">회계학개론</span>
           {% else %}
             <span class="tag" style="background:var(--tag-default);color:#fff;">{{ subj }}</span>
         {% endcase %}
@@ -172,6 +178,8 @@ layout: default
               {% when 'practice' %}논술
               {% when 'flashcard' %}암기카드
               {% when 'weekly' %}주간 회독
+              {% when 'quiz' %}1차 모의고사
+              {% when 'summary' %}1차 단권화
               {% else %}{{ cat }}
             {% endcase %}
           </span>
@@ -243,6 +251,8 @@ layout: default
       {% when 'practice' %}{% assign back_url = '/practice/' %}{% assign back_label = '논술' %}
       {% when 'flashcard' %}{% assign back_url = '/flashcards/' %}{% assign back_label = '암기카드' %}
       {% when 'weekly' %}{% assign back_url = '/progress/' %}{% assign back_label = '회독' %}
+      {% when 'quiz' %}{% assign back_url = '/quiz/' %}{% assign back_label = '1차 모의고사' %}
+      {% when 'summary' %}{% assign back_url = '/quiz/' %}{% assign back_label = '1차 단권화' %}
     {% endcase %}
   {% endfor %}
 

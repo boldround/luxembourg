@@ -1,0 +1,418 @@
+---
+layout: default
+---
+
+<style>
+  .quiz-header {
+    text-align: center;
+    margin-bottom: 1.2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .quiz-header h1 {
+    font-size: 1.3rem;
+    margin: 0 0 0.4rem;
+  }
+  .quiz-meta {
+    font-size: 0.74rem;
+    color: var(--text-muted);
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .quiz-summary {
+    display: none;
+    margin-bottom: 1.2rem;
+    padding: 0.85rem 1rem;
+    border-radius: 10px;
+    background: var(--card-bg);
+    border: 1px solid var(--accent);
+    box-shadow: var(--card-shadow);
+  }
+  .quiz-summary.visible { display: block; }
+  .quiz-summary-label {
+    font-size: 0.68rem;
+    color: var(--accent);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .quiz-summary-score {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--accent);
+    margin-top: 0.15rem;
+  }
+  .quiz-summary-actions {
+    margin-top: 0.6rem;
+    display: flex;
+    gap: 0.5rem;
+  }
+  .quiz-action-btn {
+    flex: 1;
+    padding: 0.5rem 0.8rem;
+    font-size: 0.78rem;
+    border: 1px solid var(--border);
+    background: var(--pill-bg);
+    color: var(--text-secondary);
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .quiz-action-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .quiz-q {
+    margin: 1rem 0 1.6rem;
+    padding: 1rem 1.1rem;
+    border-radius: 10px;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    box-shadow: var(--card-shadow);
+  }
+
+  .quiz-q-num {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--accent);
+    background: var(--pill-bg);
+    padding: 0.15rem 0.55rem;
+    border-radius: 10px;
+    margin-bottom: 0.5rem;
+    letter-spacing: 0.05em;
+  }
+
+  .quiz-q-text {
+    font-size: 0.96rem;
+    line-height: 1.65;
+    margin-bottom: 0.8rem;
+    color: var(--text);
+  }
+
+  .quiz-choices {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 0.8rem;
+  }
+
+  .quiz-choice {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    padding: 0.6rem 0.8rem;
+    margin-bottom: 0.4rem;
+    border: 1px solid var(--border-light);
+    border-radius: 8px;
+    cursor: pointer;
+    background: var(--bg);
+    transition: border-color 0.15s, background 0.15s;
+    font-size: 0.92rem;
+    line-height: 1.55;
+    user-select: none;
+  }
+
+  .quiz-choice:hover { border-color: var(--accent); }
+
+  .quiz-choice .choice-num {
+    flex: 0 0 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--pill-bg);
+    color: var(--text-secondary);
+    font-size: 0.72rem;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 1px;
+  }
+
+  .quiz-choice.selected {
+    border-color: var(--accent);
+    background: rgba(45, 95, 63, 0.06);
+  }
+  .quiz-choice.selected .choice-num {
+    background: var(--accent);
+    color: #fff;
+  }
+
+  .quiz-choice.correct {
+    border-color: var(--tag-success);
+    background: rgba(74, 157, 91, 0.10);
+  }
+  .quiz-choice.correct .choice-num {
+    background: var(--tag-success);
+    color: #fff;
+  }
+
+  .quiz-choice.wrong {
+    border-color: var(--tag-overdue);
+    background: rgba(192, 57, 43, 0.07);
+  }
+  .quiz-choice.wrong .choice-num {
+    background: var(--tag-overdue);
+    color: #fff;
+  }
+
+  .quiz-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .quiz-btn {
+    padding: 0.5rem 0.9rem;
+    font-size: 0.8rem;
+    border: 1px solid var(--border);
+    background: var(--pill-bg);
+    color: var(--text-secondary);
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: border-color 0.2s, color 0.2s, background 0.2s;
+  }
+  .quiz-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .quiz-btn.primary {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+  }
+  .quiz-btn.primary:hover { opacity: 0.9; color: #fff; }
+
+  .quiz-explanation {
+    display: none;
+    margin-top: 0.7rem;
+    padding: 0.75rem 0.9rem;
+    background: var(--pill-bg);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    font-size: 0.86rem;
+    line-height: 1.7;
+    color: var(--text);
+  }
+  .quiz-explanation.visible { display: block; }
+  .quiz-explanation-label {
+    display: inline-block;
+    font-size: 0.66rem;
+    font-weight: 700;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.3rem;
+  }
+  .quiz-answer-line {
+    font-weight: 600;
+    color: var(--accent);
+    margin-bottom: 0.4rem;
+    font-size: 0.88rem;
+  }
+
+  .quiz-toolbar {
+    display: flex;
+    gap: 0.4rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .quiz-toolbar .quiz-btn { font-size: 0.74rem; padding: 0.4rem 0.7rem; }
+</style>
+
+<div class="quiz-header">
+  <h1>{{ page.title }}</h1>
+  <div class="quiz-meta">
+    <span>{{ page.date | date: "%Y년 %m월 %d일" }}</span>
+    <span class="badge">1차 객관식</span>
+    {% if page.subject %}
+      {% for subj in page.subject %}
+        {% case subj %}
+          {% when 'public_finance' %}<span class="tag" style="background:var(--tag-acc1);color:#fff;">재정학</span>
+          {% when 'tax_intro' %}<span class="tag tag-tax1">세법학개론</span>
+          {% when 'accounting_intro' %}<span class="tag tag-acc2">회계학개론</span>
+          {% when 'admin_litigation' %}<span class="tag" style="background:var(--tag-default);color:#fff;">행정소송법</span>
+        {% endcase %}
+      {% endfor %}
+    {% endif %}
+    {% if page.applied_date %}
+      <span class="applied-date">적용 {{ page.applied_date }}</span>
+    {% endif %}
+    <span class="badge">{{ page.questions | size }}문제</span>
+  </div>
+</div>
+
+<div class="quiz-summary" id="quiz-summary">
+  <div class="quiz-summary-label">결과</div>
+  <div class="quiz-summary-score" id="quiz-score">0 / 0</div>
+  <div class="quiz-summary-actions">
+    <button class="quiz-action-btn" id="reveal-all">모든 정답·해설 보기</button>
+    <button class="quiz-action-btn" id="reset-quiz">다시 풀기</button>
+  </div>
+</div>
+
+<div class="quiz-toolbar">
+  <button class="quiz-btn" id="reveal-all-top">정답·해설 모두 보기</button>
+  <button class="quiz-btn" id="reset-top">다시 풀기</button>
+</div>
+
+<div id="quiz-list">
+  {% if page.content and page.content != "" %}
+    <div class="post-body" style="margin-bottom:1.2rem;">{{ content }}</div>
+  {% endif %}
+</div>
+
+<a class="back-link" href="{{ '/quiz/' | relative_url }}" style="display:inline-block;margin-top:1.5rem;font-size:0.78rem;color:var(--text-muted);text-decoration:none;">&larr; 1차 모의고사 목록으로</a>
+
+<script id="quiz-data" type="application/json">{{ page.questions | jsonify }}</script>
+
+<script>
+(function() {
+  var raw = document.getElementById('quiz-data').textContent;
+  var questions = [];
+  try { questions = JSON.parse(raw); } catch (e) { console.error(e); }
+
+  var listEl = document.getElementById('quiz-list');
+  var summaryEl = document.getElementById('quiz-summary');
+  var scoreEl = document.getElementById('quiz-score');
+  var quizSlug = "{{ page.title | slugify }}";
+  var stateKey = 'lux-quiz-' + quizSlug;
+  var savedState = {};
+  try { savedState = JSON.parse(localStorage.getItem(stateKey) || '{}'); } catch (e) {}
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, function(c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  function render() {
+    questions.forEach(function(q, idx) {
+      var card = document.createElement('div');
+      card.className = 'quiz-q';
+      card.dataset.idx = idx;
+
+      var saved = savedState[idx] || {};
+      var selected = saved.selected;       // 1-based or undefined
+      var revealed = !!saved.revealed;
+
+      var html = '';
+      html += '<div class="quiz-q-num">문제 ' + (idx + 1) + '</div>';
+      html += '<div class="quiz-q-text">' + escapeHtml(q.q || '') + '</div>';
+      html += '<ul class="quiz-choices">';
+      (q.choices || []).forEach(function(choice, ci) {
+        var oneBased = ci + 1;
+        var cls = 'quiz-choice';
+        if (revealed) {
+          if (oneBased === q.answer) cls += ' correct';
+          else if (selected === oneBased) cls += ' wrong';
+        } else if (selected === oneBased) {
+          cls += ' selected';
+        }
+        html += '<li class="' + cls + '" data-choice="' + oneBased + '">';
+        html += '<span class="choice-num">' + oneBased + '</span>';
+        html += '<span class="choice-text">' + escapeHtml(choice) + '</span>';
+        html += '</li>';
+      });
+      html += '</ul>';
+      html += '<div class="quiz-actions">';
+      html += '<button class="quiz-btn reveal-btn" type="button">정답·해설</button>';
+      html += '</div>';
+      html += '<div class="quiz-explanation' + (revealed ? ' visible' : '') + '">';
+      html += '<div class="quiz-explanation-label">해설</div>';
+      html += '<div class="quiz-answer-line">정답: ' + (q.answer || '?') + '번</div>';
+      html += '<div>' + escapeHtml(q.explanation || '') + '</div>';
+      html += '</div>';
+
+      card.innerHTML = html;
+      listEl.appendChild(card);
+
+      var choices = card.querySelectorAll('.quiz-choice');
+      choices.forEach(function(li) {
+        li.addEventListener('click', function() {
+          if (savedState[idx] && savedState[idx].revealed) return;
+          var pick = parseInt(li.dataset.choice, 10);
+          choices.forEach(function(c) { c.classList.remove('selected'); });
+          li.classList.add('selected');
+          savedState[idx] = savedState[idx] || {};
+          savedState[idx].selected = pick;
+          persist();
+        });
+      });
+
+      var revealBtn = card.querySelector('.reveal-btn');
+      revealBtn.addEventListener('click', function() {
+        revealOne(card, idx);
+      });
+    });
+
+    updateSummary();
+  }
+
+  function revealOne(card, idx) {
+    var q = questions[idx];
+    var saved = savedState[idx] = savedState[idx] || {};
+    saved.revealed = true;
+    var selected = saved.selected;
+    var choices = card.querySelectorAll('.quiz-choice');
+    choices.forEach(function(li) {
+      var oneBased = parseInt(li.dataset.choice, 10);
+      li.classList.remove('selected');
+      if (oneBased === q.answer) li.classList.add('correct');
+      else if (selected === oneBased) li.classList.add('wrong');
+    });
+    var exp = card.querySelector('.quiz-explanation');
+    if (exp) exp.classList.add('visible');
+    persist();
+    updateSummary();
+  }
+
+  function revealAll() {
+    document.querySelectorAll('.quiz-q').forEach(function(card) {
+      var idx = parseInt(card.dataset.idx, 10);
+      revealOne(card, idx);
+    });
+  }
+
+  function resetAll() {
+    savedState = {};
+    localStorage.removeItem(stateKey);
+    listEl.innerHTML = '';
+    render();
+    summaryEl.classList.remove('visible');
+  }
+
+  function updateSummary() {
+    var revealedCount = 0, correctCount = 0;
+    questions.forEach(function(q, idx) {
+      var s = savedState[idx];
+      if (s && s.revealed) {
+        revealedCount++;
+        if (s.selected === q.answer) correctCount++;
+      }
+    });
+    if (revealedCount === questions.length && questions.length > 0) {
+      summaryEl.classList.add('visible');
+      scoreEl.textContent = correctCount + ' / ' + questions.length;
+    } else if (revealedCount > 0) {
+      summaryEl.classList.add('visible');
+      scoreEl.textContent = correctCount + ' / ' + revealedCount + ' (진행 중)';
+    }
+  }
+
+  function persist() {
+    try { localStorage.setItem(stateKey, JSON.stringify(savedState)); } catch (e) {}
+  }
+
+  document.getElementById('reveal-all').addEventListener('click', revealAll);
+  document.getElementById('reset-quiz').addEventListener('click', resetAll);
+  document.getElementById('reveal-all-top').addEventListener('click', revealAll);
+  document.getElementById('reset-top').addEventListener('click', resetAll);
+
+  render();
+})();
+</script>

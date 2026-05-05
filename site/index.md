@@ -79,6 +79,11 @@ show_filters: true
     <div class="ql-title">회독 트래커</div>
     <div class="ql-desc">진도와 약점 진단</div>
   </a>
+  <a class="quick-link" href="{{ '/quiz/' | relative_url }}">
+    <div class="ql-icon">🎯</div>
+    <div class="ql-title">1차 모의고사</div>
+    <div class="ql-desc">객관식 + 단권화</div>
+  </a>
 </div>
 
 ## 최신 자료
@@ -98,6 +103,8 @@ show_filters: true
             {% when 'practice' %}논술
             {% when 'flashcard' %}암기카드
             {% when 'weekly' %}주간 회독
+            {% when 'quiz' %}1차 모의고사
+            {% when 'summary' %}1차 단권화
             {% else %}{{ cat }}
           {% endcase %}
         </span>
@@ -108,6 +115,10 @@ show_filters: true
           {% when 'accounting2' %}<span class="tag tag-acc2">회계2</span>
           {% when 'tax_law1' %}<span class="tag tag-tax1">세법1</span>
           {% when 'tax_law2' %}<span class="tag tag-tax2">세법2</span>
+          {% when 'public_finance' %}<span class="tag tag-acc1">재정학</span>
+          {% when 'tax_intro' %}<span class="tag tag-tax1">세법학개론</span>
+          {% when 'accounting_intro' %}<span class="tag tag-acc2">회계학개론</span>
+          {% when 'admin_litigation' %}<span class="tag" style="background:var(--tag-default);color:#fff;">행정소송법</span>
         {% endcase %}
       {% endfor %}
       {% if post.applied_date %}

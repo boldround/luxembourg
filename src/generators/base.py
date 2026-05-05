@@ -62,7 +62,9 @@ class BaseGenerator:
         "frontmatter 필수 필드: layout, title, date (YYYY-MM-DD HH:MM:SS +0900), "
         "categories ([type] 형태 배열), subject ([id] 형태 배열, 단수 문자열 금지), "
         "applied_date (\"YYYY-MM-DD\"). "
-        "subject 값은 반드시 [accounting1, accounting2, tax_law1, tax_law2, admin_litigation] 중 하나 이상을 배열로."
+        "subject 값은 반드시 다음 중 하나 이상을 배열로: "
+        "2차 — [accounting1, accounting2, tax_law1, tax_law2, admin_litigation]; "
+        "1차 — [public_finance, tax_intro, accounting_intro, admin_litigation]."
     )
 
     def _generate_via_claude(self, full_prompt: str) -> str | None:

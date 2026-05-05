@@ -29,7 +29,7 @@ WEEKDAY_SCHEDULE = {
     3: "flashcard",   # 목: 암기카드 30장
     4: "practice",    # 금: 세법학 논술 모범답안
     5: "weekly",      # 토: 주간 회독 + 약점 진단
-    # 6: 일요일 휴식 (콘텐츠 없음)
+    6: "quiz",        # 일: 1차 객관식 모의고사 (불합격 대비 트랙)
 }
 
 CONTENT_TYPE_KR = {
@@ -39,6 +39,8 @@ CONTENT_TYPE_KR = {
     "flashcard": "암기카드",
     "practice": "논술 답안",
     "weekly": "주간 회독",
+    "quiz": "1차 모의고사",
+    "summary": "1차 단권화",
 }
 
 
@@ -149,7 +151,7 @@ def run_pipeline(
         content_type = _select_content_type(date)
 
     if content_type is None:
-        logger.info("오늘은 휴식일 (일요일) — 콘텐츠 생성 없음")
+        logger.info("오늘 스케줄에 매핑된 콘텐츠 타입 없음 — 종료")
         return None
 
     type_kr = CONTENT_TYPE_KR.get(content_type, content_type)
@@ -204,6 +206,14 @@ def run_pipeline(
             from .generators.weekly_review import WeeklyReviewGenerator
             generator = WeeklyReviewGenerator(date)
             output_path = _step(logger, "주간 리포트 생성", generator.generate)
+        elif content_type == "quiz":
+            from .generators.quiz_gen import QuizGenerator
+            generator = QuizGenerator(date)
+            output_path = _step(logger, "1차 모의고사 생성", generator.generate)
+        elif content_type == "summary":
+            from .generators.summary_gen import SummaryGenerator
+            generator = SummaryGenerator(date)
+            output_path = _step(logger, "1차 단권화 생성", generator.generate)
         else:
             logger.error("알 수 없는 타입: %s", content_type)
             sys.exit(1)
@@ -251,7 +261,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--content-type",
         type=str,
-        choices=list(WEEKDAY_SCHEDULE.values()),
+        choices=sorted(set(list(WEEKDAY_SCHEDULE.values()) + ["summary"])),
         default=None,
     )
     parser.add_argument("--skip-collect", action="store_true")

@@ -281,18 +281,52 @@ layout: default
     });
   });
 
-  // Swipe support
+  // Swipe support — flipped 상태에서 좌우 스와이프로 grade
   var startX = null;
-  card.addEventListener('touchstart', function(e) { startX = e.touches[0].clientX; });
+  card.addEventListener('touchstart', function(e) { startX = e.touches[0].clientX; }, { passive: true });
   card.addEventListener('touchend', function(e) {
     if (startX === null) return;
     var dx = e.changedTouches[0].clientX - startX;
     if (Math.abs(dx) > 60) {
-      if (!card.classList.contains('flipped')) flip();
+      if (!card.classList.contains('flipped')) {
+        flip();
+      } else {
+        // 답 본 후 스와이프 — 좌(다시), 우(쉬움)
+        var grade = dx < 0 ? 'again' : 'good';
+        var btn = document.querySelector('[data-grade="' + grade + '"]');
+        if (btn) btn.click();
+      }
     }
     startX = null;
+  });
+
+  // 키보드 단축키 (데스크톱)
+  document.addEventListener('keydown', function(e) {
+    if (e.target.tagName === 'INPUT') return;
+    if (idx >= cards.length) return;
+    if (!card.classList.contains('flipped')) {
+      if (e.key === ' ' || e.key === 'Enter') {
+        e.preventDefault();
+        flip();
+      }
+    } else {
+      var key = null;
+      if (e.key === '1' || e.key === 'a') key = 'again';
+      else if (e.key === '2' || e.key === 'h') key = 'hard';
+      else if (e.key === '3' || e.key === 'g' || e.key === ' ' || e.key === 'Enter') key = 'good';
+      if (key) {
+        e.preventDefault();
+        var btn = document.querySelector('[data-grade="' + key + '"]');
+        if (btn) btn.click();
+      }
+    }
   });
 
   render();
 })();
 </script>
+
+<div style="text-align:center; margin-top: 1.2rem; font-size: 0.7rem; color: var(--text-muted); line-height: 1.5;">
+  <strong>모바일</strong>: 카드 탭 또는 스와이프 → 답 보기 / 답 본 후 좌우 스와이프 → 다시·쉬움<br>
+  <strong>키보드</strong>: Space/Enter 답 보기 / 1·2·3 또는 a·h·g (다시·어려움·쉬움)
+</div>

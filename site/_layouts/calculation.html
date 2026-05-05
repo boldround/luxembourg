@@ -74,6 +74,29 @@ layout: post
     background: rgba(45, 95, 63, 0.08);
     border: 1px solid var(--accent);
     font-size: 0.95rem;
+    position: relative;
+  }
+
+  /* 학습 모드: 정답을 가리고 클릭해야 노출 (수험생 사용성) */
+  .calc-answer.hidden-answer .calc-answer-value,
+  .calc-answer.hidden-answer .calc-answer-body {
+    filter: blur(7px);
+    user-select: none;
+    pointer-events: none;
+  }
+  .calc-answer.hidden-answer::after {
+    content: "탭하여 정답 보기";
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(45, 95, 63, 0.04);
+    color: var(--accent);
+    font-size: 0.85rem;
+    font-weight: 600;
+    border-radius: 10px;
+    cursor: pointer;
   }
 
   .calc-answer-label {
@@ -152,5 +175,13 @@ layout: post
       showAll.textContent = allHidden ? '모두 접기' : '단계별 풀이 보기';
     });
   }
+
+  // 정답 가리기 (학습 모드, 클릭 시 노출)
+  document.querySelectorAll('.calc-answer').forEach(function(a) {
+    a.classList.add('hidden-answer');
+    a.addEventListener('click', function() {
+      a.classList.remove('hidden-answer');
+    }, { once: true });
+  });
 })();
 </script>

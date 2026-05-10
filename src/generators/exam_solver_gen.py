@@ -88,6 +88,76 @@ class ExamSolverGenerator(BaseGenerator):
         return fm + f"## 풀이 생성 실패\n\n원본: `{self.exam_md_path.relative_to(self.base_dir)}`\n"
 
 
+PROBLEM_HEADER_RE = re.compile(r"^## \[문제 (\d+)\]\s*$", re.MULTILINE)
+
+
+def split_problems(md_text: str) -> list[tuple[int, str]]:
+    """파싱된 기출 markdown에서 문제 단위로 분리.
+
+    `## [문제 N]` 헤딩 기준. 헤더(첫 문제 이전)와 각 문제 본문을 함께 반환.
+    Returns: [(problem_num, problem_text_with_header), ...]
+    """
+    matches = list(PROBLEM_HEADER_RE.finditer(md_text))
+    if not matches:
+        return []
+    # 헤더 (첫 문제 이전)
+    preamble = md_text[: matches[0].start()].strip()
+    result = []
+    for i, m in enumerate(matches):
+        num = int(m.group(1))
+        end = matches[i + 1].start() if i + 1 < len(matches) else len(md_text)
+        body = md_text[m.start():end].strip()
+        # 풀이 시 컨텍스트로 preamble 포함
+        full = (preamble + "\n\n" + body) if preamble else body
+        result.append((num, full))
+    return result
+
+
+class ExamProblemSolverGenerator(ExamSolverGenerator):
+    """회계학처럼 입력이 긴 시험은 문제별로 분할 풀이.
+
+    하나의 (year, subject, problem_num) → 단일 post (`-p{num}` 접미).
+    Claude CLI 단일 응답 길이 제약 회피 → fallback 비율 ↓.
+    """
+
+    def __init__(self, year: int, subject: str, problem_num: int, problem_text: str, date_str: str = None):
+        super().__init__(year=year, subject=subject, date_str=date_str)
+        self.problem_num = problem_num
+        self.problem_text = problem_text
+
+    def output_path(self) -> Path:
+        return self.posts_dir / f"{self.date_str}-exam-{self.year}-{self.subject}-p{self.problem_num}.md"
+
+    def build_context(self) -> str:
+        return (
+            f"# 컨텍스트\n\n"
+            f"## 시험 정보\n"
+            f"- 연도: {self.year}\n"
+            f"- 과목: {self.subject_kr} ({self.subject})\n"
+            f"- 문제 번호: 제{self.problem_num}문제 (단일 문제 풀이)\n"
+            f"- 적용 법령 시점: {self.year}-01-01\n"
+            f"- 출력 layout: post\n\n"
+            f"## 원본 문제\n\n{self.problem_text}\n"
+        )
+
+    def fallback_content(self) -> str:
+        fm = self.frontmatter(
+            title=f"[fallback] {self.year}년 {self.subject_kr} 제{self.problem_num}문제 풀이",
+            date_str=self.date_str,
+            category="exam",
+            subjects=[self.subject],
+            applied_date=f"{self.year}-01-01",
+            excerpt="자동 생성 fallback. Claude CLI 재실행 필요.",
+            extra={
+                "exam_year": self.year,
+                "exam_round": None,
+                "exam_type": "2차",
+                "problem_num": self.problem_num,
+            },
+        )
+        return fm + f"## 풀이 생성 실패 (단일 문제)\n\n{self.problem_text[:500]}...\n"
+
+
 def list_available_exams(base_dir: Path = None) -> list[tuple[int, str]]:
     """data/exams/{subject}/{year}.md 패턴으로 사용 가능한 (year, subject) 목록 반환."""
     if base_dir is None:

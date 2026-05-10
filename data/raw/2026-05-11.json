@@ -1,7 +1,108 @@
 {
-  "collected_at": "2026-05-05T15:57:04.310107+09:00",
+  "collected_at": "2026-05-11T02:51:35.452993+09:00",
   "date": "2026-05-11",
   "source_count": 1,
-  "item_count": 0,
-  "items": []
+  "item_count": 10,
+  "items": [
+    {
+      "source": "국세청 보도자료",
+      "category": "press",
+      "title": "코스피 7000 시대, “코리아 프리미엄” 안착을 위한 “주식시장 불공정 탈세자” 세무조사(2차)",
+      "link": "https://www.nts.go.kr/nts/na/ntt/selectNttInfo.do?nttSn=1350913&mi=2201",
+      "description": "[조사1과] 코스피 7000 시대, “코리아 프리미엄” 안착을 위한 “주식시장 불공정 탈세자” 세무조사(2차)",
+      "pub_date": "2026.05.06.",
+      "ntt_sn": "1350913",
+      "department": "조사1과"
+    },
+    {
+      "source": "국세청 보도자료",
+      "category": "press",
+      "title": "’25년 귀속 양도소득세, 홈택스로 편리하게 신고하세요",
+      "link": "https://www.nts.go.kr/nts/na/ntt/selectNttInfo.do?nttSn=1350890&mi=2201",
+      "description": "[부동산납세과] ’25년 귀속 양도소득세, 홈택스로 편리하게 신고하세요",
+      "pub_date": "2026.05.04.",
+      "ntt_sn": "1350890",
+      "department": "부동산납세과"
+    },
+    {
+      "source": "국세청 보도자료",
+      "category": "press",
+      "title": "일하는 가구에 최대 330만원 지원  정기분 근로･자녀장려금, 6월 1일까지 신청하세요",
+      "link": "https://www.nts.go.kr/nts/na/ntt/selectNttInfo.do?nttSn=1350768&mi=2201",
+      "description": "[장려세제과] 일하는 가구에 최대 330만원 지원  정기분 근로･자녀장려금, 6월 1일까지 신청하세요",
+      "pub_date": "2026.04.30.",
+      "ntt_sn": "1350768",
+      "department": "장려세제과"
+    },
+    {
+      "source": "국세청 보도자료",
+      "category": "press",
+      "title": "5월 종합소득세·지방소득세 신고, 개선된 홈택스·ARS·국민비서로 더 쉽고 편리하게",
+      "link": "https://www.nts.go.kr/nts/na/ntt/selectNttInfo.do?nttSn=1350715&mi=2201",
+      "description": "[소득세과] 5월 종합소득세·지방소득세 신고, 개선된 홈택스·ARS·국민비서로 더 쉽고 편리하게",
+      "pub_date": "2026.04.29.",
+      "ntt_sn": "1350715",
+      "department": "소득세과"
+    },
+    {
+      "source": "국세청 보도자료",
+      "category": "press",
+      "title": "세금 떼먹고 해외에 숨겨놓은 재산, 끝까지 쫓아가 받아냈다.",
+      "link": "https://www.nts.go.kr/nts/na/ntt/selectNttInfo.do?nttSn=1350714&mi=2201",
+      "description": "[역외정보담당관실] 세금 떼먹고 해외에 숨겨놓은 재산, 끝까지 쫓아가 받아냈다.",
+      "pub_date": "2026.04.28.",
+      "ntt_sn": "1350714",
+      "department": "역외정보담당관실"
+    },
+    {
+      "source": "국세청 보도자료",
+      "category": "press",
+      "title": "새로운 국제조세 질서의 시작, 글로벌최저한세 6.30.까지 신고하세요",
+      "link": "https://www.nts.go.kr/nts/na/ntt/selectNttInfo.do?nttSn=1350699&mi=2201",
+      "description": "[국제조세관리관실] 새로운 국제조세 질서의 시작, 글로벌최저한세 6.30.까지 신고하세요",
+      "pub_date": "2026.04.28.",
+      "ntt_sn": "1350699",
+      "department": "국제조세관리관실"
+    },
+    {
+      "source": "국세청 보도자료",
+      "category": "press",
+      "title": "펀드 투자로 해외소득 얻은 금융소득종합과세 대상자는 5월 종합소득세 신고 때 펀드가 낸 세금 공제받으세요",
+      "link": "https://www.nts.go.kr/nts/na/ntt/selectNttInfo.do?nttSn=1350542&mi=2201",
+      "description": "[국제세원담당관실] 펀드 투자로 해외소득 얻은 금융소득종합과세 대상자는 5월 종합소득세 신고 때 펀드가 낸 세금 공제받으세요",
+      "pub_date": "2026.04.24.",
+      "ntt_sn": "1350542",
+      "department": "국제세원담당관실"
+    },
+    {
+      "source": "국세청 보도자료",
+      "category": "press",
+      "title": "국세행정 AI 대전환의 시작, 세무전문 AI 챗봇 시범운영",
+      "link": "https://www.nts.go.kr/nts/na/ntt/selectNttInfo.do?nttSn=1350465&mi=2201",
+      "description": "[인공지능혁신담당관실] 국세행정 AI 대전환의 시작, 세무전문 AI 챗봇 시범운영",
+      "pub_date": "2026.04.23.",
+      "ntt_sn": "1350465",
+      "department": "인공지능혁신담당관실"
+    },
+    {
+      "source": "국세청 보도자료",
+      "category": "press",
+      "title": "어려울 땐 늦추고 여유 있을 땐 채우는 '맞춤형 학자금 상환'",
+      "link": "https://www.nts.go.kr/nts/na/ntt/selectNttInfo.do?nttSn=1350361&mi=2201",
+      "description": "[학자금상환과] 어려울 땐 늦추고 여유 있을 땐 채우는 '맞춤형 학자금 상환'",
+      "pub_date": "2026.04.20.",
+      "ntt_sn": "1350361",
+      "department": "학자금상환과"
+    },
+    {
+      "source": "국세청 보도자료",
+      "category": "press",
+      "title": "'불평등 실태 연구' 위해 국회-국세청 손잡는다.",
+      "link": "https://www.nts.go.kr/nts/na/ntt/selectNttInfo.do?nttSn=1350352&mi=2201",
+      "description": "[국세데이터담당관실] '불평등 실태 연구' 위해 국회-국세청 손잡는다.",
+      "pub_date": "2026.04.17.",
+      "ntt_sn": "1350352",
+      "department": "국세데이터담당관실"
+    }
+  ]
 }

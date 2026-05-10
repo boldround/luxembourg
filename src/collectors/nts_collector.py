@@ -1,10 +1,15 @@
 #!/usr/bin/env python3
 """국세청 보도자료 / 예규 수집기.
 
+국세청은 RSS를 제공하지 않으므로 보도자료 리스트 페이지(HTML)를 가볍게 스크래핑한다.
+- 리스트 페이지: https://www.nts.go.kr/nts/na/ntt/selectNttList.do?mi=2201&bbsId=1028
+- 상세 링크: https://www.nts.go.kr/nts/na/ntt/selectNttInfo.do?nttSn={id}&mi=2201
+
 크롤링 안전 수칙 준수:
 - 요청 간 최소 5초 대기
 - 대량 수집 시 10초 + 1분 휴식
 - 차단 신호(429, 403) 감지 시 즉시 중단
+- 리스트 페이지 1장만 가져오고 상세 페이지는 호출하지 않음 (요청 횟수 최소화)
 """
 
 import json
@@ -12,6 +17,7 @@ import logging
 import re
 import time
 from datetime import datetime, timezone, timedelta
+from html import unescape
 from pathlib import Path
 from urllib.request import Request, urlopen
 from urllib.error import URLError, HTTPError
@@ -33,15 +39,19 @@ USER_AGENT = (
     "Chrome/120.0.0.0 Safari/537.36"
 )
 
-# 수집 대상 — RSS 또는 정적 HTML
+# 수집 대상 — 국세청 RSS는 존재하지 않음 (2026-05 기준 확인).
+# 대신 보도자료 리스트 페이지의 HTML 테이블을 파싱한다.
 SOURCES = [
     {
-        "name": "국세청 보도자료 RSS",
-        "type": "rss",
-        "url": "https://www.nts.go.kr/comm/rss/rss.xml?mi=12106",
+        "name": "국세청 보도자료",
+        "type": "html_list",
+        "url": "https://www.nts.go.kr/nts/na/ntt/selectNttList.do?mi=2201&bbsId=1028",
+        "detail_url_template": "https://www.nts.go.kr/nts/na/ntt/selectNttInfo.do?nttSn={id}&mi=2201",
         "category": "press",
     },
-    # 추가 소스는 안전 확인 후 점진적 등록
+    # 향후 후보(현재 미적용):
+    # - 국세법령정보시스템 신규 예규/통칙 (taxlaw.nts.go.kr) — JS 렌더 의존, 별도 조사 필요
+    # - 기획재정부 보도자료 (moef.go.kr) — RSS 없음, 별도 스크래퍼 필요
 ]
 
 
@@ -91,7 +101,7 @@ class NTSCollector:
         req = Request(url, headers={"User-Agent": USER_AGENT})
         try:
             with urlopen(req, timeout=REQUEST_TIMEOUT) as resp:
-                if resp.status == 429 or resp.status == 403:
+                if resp.status in (429, 403):
                     logger.error("차단 감지 (%d) — 즉시 중단", resp.status)
                     raise RuntimeError(f"blocked: {resp.status}")
                 content = resp.read().decode("utf-8", errors="replace")
@@ -103,6 +113,8 @@ class NTSCollector:
 
         if source["type"] == "rss":
             return self._parse_rss(content, source)
+        if source["type"] == "html_list":
+            return self._parse_html_list(content, source)
         return []
 
     def _parse_rss(self, content: str, source: dict) -> list[dict]:
@@ -130,6 +142,63 @@ class NTSCollector:
                 "description": desc[:500],
                 "pub_date": pub,
             })
+        return items
+
+    def _parse_html_list(self, content: str, source: dict) -> list[dict]:
+        """국세청 보도자료 리스트 테이블 파서.
+
+        각 <tr>에는 다음과 같은 td가 있다:
+        - data-table="number" → 게시 번호
+        - data-table="subject" → <a data-id="{nttSn}" title="{title}">…</a>
+        - data-table="write" (첫 번째) → 담당부서
+        - data-table="date" → 작성일자 (YYYY.MM.DD.)
+        """
+        items = []
+        rows = re.findall(r"<tr[^>]*>(.*?)</tr>", content, re.DOTALL)
+        template = source.get("detail_url_template", "")
+
+        for row in rows:
+            # 헤더 행/빈 행 스킵
+            if "data-table" not in row:
+                continue
+
+            id_match = re.search(
+                r'<a[^>]*data-id="(\d+)"[^>]*title="([^"]+)"[^>]*class="nttInfoBtn"',
+                row,
+            )
+            if not id_match:
+                continue
+            nttsn, title = id_match.group(1), unescape(id_match.group(2)).strip()
+
+            # 첫 번째 data-table="write" 셀 안의 주석을 건너뛰고 부서명만 추출
+            dept = ""
+            write_cells = re.findall(
+                r'<td[^>]*data-table="write"[^>]*>(.*?)</td>', row, re.DOTALL
+            )
+            if write_cells:
+                # 주석/태그 제거 후 첫 줄
+                stripped = re.sub(r"<!--.*?-->", "", write_cells[0], flags=re.DOTALL)
+                stripped = re.sub(r"<[^>]+>", "", stripped)
+                dept = unescape(stripped).strip()
+
+            date_match = re.search(
+                r'<td[^>]*data-table="date"[^>]*>\s*([^<]+?)\s*</td>', row
+            )
+            pub_date = date_match.group(1).strip() if date_match else ""
+
+            link = template.format(id=nttsn) if template else ""
+
+            items.append({
+                "source": source["name"],
+                "category": source["category"],
+                "title": title,
+                "link": link,
+                "description": f"[{dept}] {title}" if dept else title,
+                "pub_date": pub_date,
+                "ntt_sn": nttsn,
+                "department": dept,
+            })
+
         return items
 
 

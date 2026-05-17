@@ -113,6 +113,68 @@ def split_problems(md_text: str) -> list[tuple[int, str]]:
     return result
 
 
+class ExamRangeSolverGenerator(ExamSolverGenerator):
+    """1차 객관식처럼 80문제 합본은 영역(10문제씩) 단위로 분할 풀이.
+
+    하나의 (year, subject, range_start, range_end) → 단일 post (`-r{start}-{end}` 접미).
+    """
+
+    def __init__(self, year: int, subject: str, range_start: int, range_end: int, problems_text: str, date_str: str = None):
+        super().__init__(year=year, subject=subject, date_str=date_str)
+        self.range_start = range_start
+        self.range_end = range_end
+        self.problems_text = problems_text
+
+    def output_path(self) -> Path:
+        return self.posts_dir / f"{self.date_str}-exam-{self.year}-{self.subject}-r{self.range_start}-{self.range_end}.md"
+
+    def build_context(self) -> str:
+        return (
+            f"# 컨텍스트\n\n"
+            f"## 시험 정보\n"
+            f"- 연도: {self.year}\n"
+            f"- 과목: {self.subject_kr} ({self.subject})\n"
+            f"- 문제 범위: {self.range_start}번 ~ {self.range_end}번 (영역별 분할 풀이)\n"
+            f"- 적용 법령 시점: {self.year}-01-01\n"
+            f"- 출력 layout: post\n\n"
+            f"## 출력 원칙 (1차 객관식 풀이)\n"
+            f"- 각 문제마다: 문제 번호 + 정답(①~⑤) + **한 단락(2-4문장)** 핵심 해설\n"
+            f"- 함정 포인트 명시 — 왜 다른 보기가 틀렸는지 1-2개\n"
+            f"- 조문/판례 인용은 시험연도 기준 시행 법령\n\n"
+            f"## 원본 문제 ({self.range_end - self.range_start + 1}문제)\n\n{self.problems_text}\n"
+        )
+
+    def fallback_content(self) -> str:
+        fm = self.frontmatter(
+            title=f"[fallback] {self.year}년 {self.subject_kr} {self.range_start}-{self.range_end}번 풀이",
+            date_str=self.date_str,
+            category="exam",
+            subjects=[self.subject],
+            applied_date=f"{self.year}-01-01",
+            excerpt="자동 생성 fallback.",
+            extra={
+                "exam_year": self.year,
+                "exam_type": "1차",
+                "range_start": self.range_start,
+                "range_end": self.range_end,
+            },
+        )
+        return fm + "## 풀이 생성 실패\n\n분할 재시도 필요.\n"
+
+
+def split_problems_by_range(md_text: str, start_num: int, end_num: int) -> str:
+    """## [문제 N] 헤딩에서 start_num~end_num 범위만 추출."""
+    header_part = md_text.split('## [문제')[0]
+    matches = list(PROBLEM_HEADER_RE.finditer(md_text))
+    chunks = []
+    for i, m in enumerate(matches):
+        num = int(m.group(1))
+        if start_num <= num <= end_num:
+            end = matches[i + 1].start() if i + 1 < len(matches) else len(md_text)
+            chunks.append(md_text[m.start():end].strip())
+    return header_part.strip() + "\n\n" + "\n\n".join(chunks) if chunks else ""
+
+
 class ExamProblemSolverGenerator(ExamSolverGenerator):
     """회계학처럼 입력이 긴 시험은 문제별로 분할 풀이.
 

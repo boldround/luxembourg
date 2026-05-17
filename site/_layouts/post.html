@@ -302,6 +302,22 @@ layout: default
   <a class="back-link" href="{{ back_url | relative_url }}">&larr; {{ back_label }} 목록으로</a>
 </article>
 
+<script>
+// 회독 트래커: 글 진입 시 LocalStorage에 기록 (한 페이지 = 한 글 = 1회독 +1)
+(function() {
+  try {
+    var url = "{{ page.url }}";
+    var reads = JSON.parse(localStorage.getItem('lux-reads') || '{}');
+    if (!reads[url]) reads[url] = { count: 0, first: null, last: null };
+    reads[url].count += 1;
+    var now = new Date().toISOString();
+    if (!reads[url].first) reads[url].first = now;
+    reads[url].last = now;
+    localStorage.setItem('lux-reads', JSON.stringify(reads));
+  } catch (e) { console.warn('read tracker', e); }
+})();
+</script>
+
 {% if headings > 1 %}
 <script>
 (function() {

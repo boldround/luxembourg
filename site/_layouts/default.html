@@ -854,6 +854,41 @@
   </script>
 
   <script>
+  // 회독 트래커: 인덱스 페이지의 post 링크에 ✓ 표시
+  (function() {
+    var reads = {};
+    try { reads = JSON.parse(localStorage.getItem('lux-reads') || '{}'); } catch (e) {}
+    var total = 0, read_n = 0;
+    document.querySelectorAll('.post-list a[href]').forEach(function(a) {
+      var url = a.getAttribute('href');
+      // baseurl 제거 (relative_url 처리됨)
+      var baseUrl = "{{ site.baseurl }}";
+      if (baseUrl && url.indexOf(baseUrl) === 0) url = url.substring(baseUrl.length);
+      total++;
+      if (reads[url] && reads[url].count > 0) {
+        read_n++;
+        var mark = document.createElement('span');
+        mark.className = 'read-mark';
+        mark.textContent = '✓';
+        mark.title = reads[url].count + '회독 (마지막: ' + (reads[url].last || '').slice(0, 10) + ')';
+        mark.style.cssText = 'display:inline-block;margin-left:0.4rem;color:var(--tag-success);font-weight:700;font-size:0.85em;';
+        a.parentNode.insertBefore(mark, a.nextSibling);
+      }
+    });
+    // 인덱스 페이지 상단에 진도 요약 (post-list가 있을 때만)
+    if (total > 0) {
+      var summary = document.createElement('div');
+      summary.className = 'read-summary';
+      summary.style.cssText = 'padding:0.7rem 1rem;margin:1rem 0 1.2rem;background:var(--pill-bg);border-radius:8px;font-size:0.82rem;color:var(--text-secondary);border:1px dashed var(--border);';
+      var pct = total > 0 ? Math.round(read_n / total * 100) : 0;
+      summary.innerHTML = '학습 진도: <strong style="color:var(--accent);">' + read_n + ' / ' + total + '</strong> (' + pct + '%) — 읽은 글에 ✓ 표시';
+      var list = document.querySelector('.post-list');
+      if (list && list.parentNode) list.parentNode.insertBefore(summary, list);
+    }
+  })();
+  </script>
+
+  <script>
   (function() {
     var toggle = document.getElementById('theme-toggle');
     var root = document.documentElement;
